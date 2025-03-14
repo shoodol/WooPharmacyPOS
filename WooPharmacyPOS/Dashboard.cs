@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
+using System.Configuration;
 
 namespace WooPharmacyPOS
 {
@@ -37,9 +38,14 @@ namespace WooPharmacyPOS
             "It always seems impossible until it's done. – Nelson Mandela"
         };
 
+        private string connectionString; // Connection string from App.config
+
         public Dashboard()
         {
             InitializeComponent();
+
+            // Retrieve the connection string from App.config
+            connectionString = ConfigurationManager.ConnectionStrings["WooPharmacyDBConnection"].ConnectionString;
 
             // Configure ComboBox auto-completion
             cmbProductSearch.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
@@ -253,59 +259,60 @@ namespace WooPharmacyPOS
                 return;
             }
 
-            // Generate PDF receipt
-            GeneratePDFReceipt();
+            // Generate pop-up receipt
+            ShowReceiptPopup();
 
             // Reset the form after printing the receipt
             ResetForm();
         }
 
-        private void GeneratePDFReceipt()
+        private void ShowReceiptPopup()
         {
-            // Create a PDF document
-            Document doc = new Document();
+            // Create a pop-up form to display the receipt
+            Form receiptForm = new Form();
+            receiptForm.Text = "WooPharmacy POS Receipt";
+            receiptForm.Size = new System.Drawing.Size(300, 300);
 
-            // Define the path to the Receipt folder
-            string receiptsFolder = Path.Combine(Application.StartupPath, "Receipt");
+            // Create a RichTextBox to display the receipt details
+            RichTextBox receiptText = new RichTextBox();
+            receiptText.ReadOnly = true;
+            receiptText.Dock = DockStyle.Fill;
+            receiptText.Font = new System.Drawing.Font("Arial", 12);
 
-            // Create the folder if it doesn't exist
-            if (!Directory.Exists(receiptsFolder))
-            {
-                Directory.CreateDirectory(receiptsFolder);
-            }
+            // Add receipt details to the RichTextBox
+            receiptText.Text =
+                "WooPharmacy POS Receipt\n" +
+                "----------------------------------\n" +
+                $"Product: {receiptProductName}\n" +
+                $"Quantity: {receiptQuantity}\n" +
+                $"Total: {receiptTotalPayment}\n" +
+                $"Payment Given: {receiptPaymentGiven}\n" +
+                $"Change: {receiptChange}\n" +
+                "----------------------------------\n" +
+                "Thank you for your purchase!";
 
-            // Define the file path
-            string filePath = Path.Combine(receiptsFolder, $"Receipt_{DateTime.Now:yyyyMMdd_HHmmss}.pdf");
+            // Add the RichTextBox to the form
+            receiptForm.Controls.Add(receiptText);
 
-            try
-            {
-                PdfWriter.GetInstance(doc, new FileStream(filePath, FileMode.Create));
-                doc.Open();
+            // Show the receipt form as a dialog
+            receiptForm.ShowDialog();
+        }
 
-                // Add receipt details to the PDF
-                doc.Add(new Paragraph("WooPharmacy POS Receipt"));
-                doc.Add(new Paragraph("----------------------------------"));
-                doc.Add(new Paragraph($"Product: {receiptProductName}"));
-                doc.Add(new Paragraph($"Quantity: {receiptQuantity}"));
-                doc.Add(new Paragraph($"Total: {receiptTotalPayment}"));
-                doc.Add(new Paragraph($"Payment Given: {receiptPaymentGiven}"));
-                doc.Add(new Paragraph($"Change: {receiptChange}"));
-                doc.Add(new Paragraph("----------------------------------"));
-                doc.Add(new Paragraph("Thank you for your purchase!"));
+        private void ResetForm()
+        {
+            cmbProductSearch.Text = "";
+            txtQuantity.Text = "";
+            txtPaymentAmount.Text = "";
+            // Format currency as PHP
+            lblTotalPayment.Text = 0.ToString("C", CultureInfo.CreateSpecificCulture("en-PH"));
+            lblChange.Text = 0.ToString("C", CultureInfo.CreateSpecificCulture("en-PH"));
 
-                MessageBox.Show($"Receipt saved to: {filePath}", "Receipt Generated", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // Open the PDF automatically
-                System.Diagnostics.Process.Start(filePath);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error generating PDF: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                doc.Close();
-            }
+            // Clear receipt details
+            receiptProductName = "";
+            receiptQuantity = "";
+            receiptTotalPayment = "";
+            receiptPaymentGiven = "";
+            receiptChange = "";
         }
 
         private decimal GetProductPrice(string productName)
@@ -390,23 +397,6 @@ namespace WooPharmacyPOS
                     }
                 }
             }
-        }
-
-        private void ResetForm()
-        {
-            cmbProductSearch.Text = "";
-            txtQuantity.Text = "";
-            txtPaymentAmount.Text = "";
-            // Format currency as PHP
-            lblTotalPayment.Text = 0.ToString("C", CultureInfo.CreateSpecificCulture("en-PH"));
-            lblChange.Text = 0.ToString("C", CultureInfo.CreateSpecificCulture("en-PH"));
-
-            // Clear receipt details
-            receiptProductName = "";
-            receiptQuantity = "";
-            receiptTotalPayment = "";
-            receiptPaymentGiven = "";
-            receiptChange = "";
         }
 
         // Add New Product Button Click Event
@@ -533,7 +523,17 @@ namespace WooPharmacyPOS
                     txtNewProductName.Text = row.Cells["Name"].Value.ToString();
                     txtNewProductPrice.Text = row.Cells["Price"].Value.ToString();
                     txtNewProductStock.Text = row.Cells["Stock"].Value.ToString();
-                    dateTimePickerExpirationDate.Value = Convert.ToDateTime(row.Cells["ExpirationDate"].Value); // Set expiration date
+
+                    // Handle nullable ExpirationDate
+                    if (row.Cells["ExpirationDate"].Value != DBNull.Value)
+                    {
+                        dateTimePickerExpirationDate.Value = Convert.ToDateTime(row.Cells["ExpirationDate"].Value); // Set expiration date
+                    }
+                    else
+                    {
+                        // If ExpirationDate is NULL, set the DateTimePicker to a default value (e.g., today's date)
+                        dateTimePickerExpirationDate.Value = DateTime.Now;
+                    }
                 }
             }
         }
@@ -632,7 +632,6 @@ namespace WooPharmacyPOS
         private DataTable GetMonthlySalesReport(int year, int month)
         {
             DataTable dt = new DataTable();
-            string connectionString = "Server=KENSHIN;Database=WooPharmacyDB;Trusted_Connection=True;";
             string query = "GetMonthlySalesReport";
 
             using (SqlConnection conn = new SqlConnection(connectionString))
