@@ -69,7 +69,7 @@ By following these steps, your team should be able to set up the project and dat
 -Shoodol🤖
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-## 📣Step-by-Step Guide for the Target System Owner📣
+## 📣Step-by-Step Guide for the Target System📣
  
 1. Extract the ZIP File
    
