@@ -23,12 +23,11 @@ A Point of Sale (POS) system for managing pharmacy operations.🤑
    Click Build > Build Solution.
    Press F5 to run the project.
 
-### Here are the official links to download
+## ‼️Here are the official links to download‼️
 
-#### Visual Studio 2022, SQL Server, and SQL Server Management Studio (SSMS):
+## Visual Studio 2022, SQL Server, and SQL Server Management Studio (SSMS):
 
 1. Visual Studio 2022
-   ```bash
 Visual Studio 2022 is the latest version of Microsoft's integrated development environment (IDE). You can download the Community edition for free, which is suitable for individual developers and small teams.
 Download Link: https://visualstudio.microsoft.com/vs/
 Visual Studio 2022 Community Edition
@@ -59,7 +58,7 @@ Click the link above.
 Download the latest version of SSMS.
 Run the installer and follow the on-screen instructions to install SSMS.
 
-## Additional Notes
+## ‼️Additional Notes‼️
 
 Visual Studio 2022: Make sure to install the .NET Desktop Development workload during installation, as it includes the necessary tools for building Windows Forms applications.
 SQL Server: During installation, ensure that the Database Engine and SQL Server Management Tools are selected.
@@ -142,7 +141,7 @@ Select Send to > Desktop (create shortcut).
 Run the Application from the Desktop:
 Double-click the shortcut on your desktop to launch the application in the future.
 
-## Troubleshooting
+## ‼️Troubleshooting‼️
 
 SQLCMD Not Found:
 If you see an error like 'sqlcmd' is not recognized, ensure SQL Server Tools are installed on your system.
@@ -167,7 +166,7 @@ script.sql: SQL script for database setup.
 Setup.bat: Batch file to automate database restoration and application launch.
 WooPharmacyDB_LogBackup_2025-03-14_03-36-25.bak: Database backup file.
 
-‼️Final Notes‼️:
+## ‼️Final Notes‼️:
 
 Ensure the target system has .NET Framework 4.8 installed.
 https://dotnet.microsoft.com/en-us/download/dotnet-framework/thank-you/net48-web-installer
